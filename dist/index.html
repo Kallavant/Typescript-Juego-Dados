@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de Dados</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #actualizaciones {
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        #resultado {
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 18px;
+            padding: 10px;
+            background-color: #f0f0f0;
+        }
+        .dado {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background-color: white;
+            border: 2px solid #333;
+            border-radius: 8px;
+            margin: 5px;
+            position: relative;
+        }
+        .punto {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background-color: #333;
+            border-radius: 50%;
+        }
+        /* Posiciones de los puntos para los diferentes valores de los dados */
+        .dado-1 .punto:nth-child(1) { top: 16px; left: 16px; }
+        
+        .dado-2 .punto:nth-child(1) { top: 8px; left: 8px; }
+        .dado-2 .punto:nth-child(2) { bottom: 8px; right: 8px; }
+        
+        .dado-3 .punto:nth-child(1) { top: 8px; left: 8px; }
+        .dado-3 .punto:nth-child(2) { top: 16px; left: 16px; }
+        .dado-3 .punto:nth-child(3) { bottom: 8px; right: 8px; }
+        
+        .dado-4 .punto:nth-child(1) { top: 8px; left: 8px; }
+        .dado-4 .punto:nth-child(2) { top: 8px; right: 8px; }
+        .dado-4 .punto:nth-child(3) { bottom: 8px; left: 8px; }
+        .dado-4 .punto:nth-child(4) { bottom: 8px; right: 8px; }
+        
+        .dado-5 .punto:nth-child(1) { top: 8px; left: 8px; }
+        .dado-5 .punto:nth-child(2) { top: 8px; right: 8px; }
+        .dado-5 .punto:nth-child(3) { bottom: 8px; left: 8px; }
+        .dado-5 .punto:nth-child(4) { bottom: 8px; right: 8px; }
+        .dado-5 .punto:nth-child(5) { top: 16px; left: 16px; }
+        
+        .dado-6 .punto:nth-child(1) { top: 8px; left: 8px; }
+        .dado-6 .punto:nth-child(2) { top: 8px; right: 8px; }
+        .dado-6 .punto:nth-child(3) { bottom: 8px; left: 8px; }
+        .dado-6 .punto:nth-child(4) { bottom: 8px; right: 8px; }
+        .dado-6 .punto:nth-child(5) { top: 20px; left: 8px; }
+        .dado-6 .punto:nth-child(6) { top: 20px; right: 8px; }
+
+        .jugada-info {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        .jugador-nombre {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .dados-container {
+            margin: 10px 0;
+            display: flex;
+            flex-wrap: wrap; /* Para evitar solapamientos */
+            gap: 10px; /* Espaciado entre dados */
+            align-items: center;
+        }
+        .puntaje {
+            margin-top: 5px;
+            font-weight: bold;
+        }
+    </style>
+    <script type="module">
+        import { JuegoDados } from './JuegoDados.js';
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('playerForm');
+            
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const jugador1Nombre = document.getElementById('jugador1').value;
+                const jugador2Nombre = document.getElementById('jugador2').value;
+                
+                if (jugador1Nombre && jugador2Nombre) {
+                    // Limpiar áreas de resultado y actualizaciones
+                    const actualizacionesDiv = document.getElementById('actualizaciones');
+                    const resultadoDiv = document.getElementById('resultado');
+                    
+                    actualizacionesDiv.innerHTML = '<h3>Progreso del juego:</h3>';
+                    resultadoDiv.innerHTML = '';
+                    
+                    const juego = new JuegoDados(jugador1Nombre, jugador2Nombre);
+                    
+                    // Pasar el elemento de actualizaciones al método iniciarJuego
+                    juego.iniciarJuego(actualizacionesDiv);
+                    
+                    if (juego.vencedor == null) {
+                        resultadoDiv.textContent = "Empate. No hay un vencedor";
+                    } else {
+                        resultadoDiv.textContent = "¡El vencedor es: " + juego.vencedor.nombre + "!";
+                    }
+                }
+            });
+        });
+
+        // Función para crear un elemento de dado visual según el valor
+        window.crearDado = function(valor) {
+            const dado = document.createElement('div');
+            dado.className = `dado dado-${valor}`;
+            
+            // Añadir los puntos correspondientes al valor del dado
+            for (let i = 0; i < valor; i++) {
+                const punto = document.createElement('div');
+                punto.className = 'punto';
+                dado.appendChild(punto);
+            }
+            
+            return dado;
+        };
+    </script>
+</head>
+<body>
+    <h1>Juego de Dados</h1>
+    
+    <form id="playerForm">
+        <div class="form-group">
+            <label for="jugador1">Jugador 1:</label>
+            <input type="text" id="jugador1" required>
+        </div>
+        <div class="form-group">
+            <label for="jugador2">Jugador 2:</label>
+            <input type="text" id="jugador2" required>
+        </div>
+        <button type="submit">Iniciar Juego</button>
+    </form>
+    
+    <div id="resultado"></div>
+    <div id="actualizaciones"></div>
+</body>
+</html>

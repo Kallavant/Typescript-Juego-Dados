@@ -26,21 +26,39 @@ export class JuegoDados {
     iniciarJugada() {
         const jugadaActual = new Jugada();
         const jugadorActual = this.bandJugador ? this.jugador1 : this.jugador2;
-        if (this.bandJugador) {
-            jugadaActual.iniciarJugada(this.jugador1, this.jugador2, this.dado1, this.dado2);
-        }
-        else {
-            jugadaActual.iniciarJugada(this.jugador2, this.jugador1, this.dado1, this.dado2);
-        }
-        this.marcadorJugador1 = this.marcadorJugador1 + this.jugador1.puntoGanado;
-        this.marcadorJugador2 = this.marcadorJugador2 + this.jugador2.puntoGanado;
-        // Obtener los valores de los dados usando la propiedad 'puntos'
-        const valorDado1 = this.dado1.puntos;
-        const valorDado2 = this.dado2.puntos;
+        // Crear dados específicos para cada jugador
+        const dadoJ1_1 = new Dado();
+        const dadoJ1_2 = new Dado();
+        const dadoJ2_1 = new Dado();
+        const dadoJ2_2 = new Dado();
+        // Preparar resultado
+        let valorDado1J1, valorDado2J1, sumaJ1 = 0;
+        let valorDado1J2, valorDado2J2, sumaJ2 = 0;
+        // Cada jugador lanza sus propios dados
+        sumaJ1 = this.jugador1.lanzaDados(dadoJ1_1, dadoJ1_2);
+        valorDado1J1 = dadoJ1_1.puntos;
+        valorDado2J1 = dadoJ1_2.puntos;
+        sumaJ2 = this.jugador2.lanzaDados(dadoJ2_1, dadoJ2_2);
+        valorDado1J2 = dadoJ2_1.puntos;
+        valorDado2J2 = dadoJ2_2.puntos;
+        // Ejecutamos la jugada para determinar quién gana puntos
+        jugadaActual.iniciarJugada(this.jugador1, this.jugador2, dadoJ1_1, dadoJ1_2);
+        // Guardamos los puntos ganados para retornarlos
+        const puntoJ1 = this.jugador1.puntoGanado;
+        const puntoJ2 = this.jugador2.puntoGanado;
+        // Actualizamos los marcadores
+        this.marcadorJugador1 += puntoJ1;
+        this.marcadorJugador2 += puntoJ2;
         return {
             jugadorActual,
-            valorDado1,
-            valorDado2
+            valorDado1J1,
+            valorDado2J1,
+            valorDado1J2,
+            valorDado2J2,
+            sumaJ1,
+            sumaJ2,
+            puntoJ1,
+            puntoJ2
         };
     }
     iniciarJuego(elementoActualizacion) {
@@ -53,7 +71,7 @@ export class JuegoDados {
         this.elegirPrimerLanzador();
         //Ciclo infinito de juego
         do {
-            const { jugadorActual, valorDado1, valorDado2 } = this.iniciarJugada();
+            const { jugadorActual, valorDado1J1, valorDado2J1, valorDado1J2, valorDado2J2, sumaJ1, sumaJ2, puntoJ1, puntoJ2 } = this.iniciarJugada();
             this.cantidadJugadas++;
             // Si se proporcionó un elemento HTML para mostrar actualizaciones
             if (elementoActualizacion) {
@@ -64,13 +82,36 @@ export class JuegoDados {
                 const infoJugada = document.createElement('div');
                 infoJugada.innerHTML = `<span class="jugador-nombre">${jugadorActual.nombre}</span> lanza los dados (Jugada #${this.cantidadJugadas}):`;
                 jugadaDiv.appendChild(infoJugada);
-                // Contenedor para los dados
-                const dadosContainer = document.createElement('div');
-                dadosContainer.className = 'dados-container';
-                // Añadir dados visuales
-                dadosContainer.appendChild(window.crearDado(valorDado1));
-                dadosContainer.appendChild(window.crearDado(valorDado2));
-                jugadaDiv.appendChild(dadosContainer);
+                // Mostrar dados del Jugador 1
+                const dadosJ1Container = document.createElement('div');
+                dadosJ1Container.className = 'dados-container';
+                const jugador1Label = document.createElement('div');
+                jugador1Label.innerHTML = `<span class="jugador-nombre">${this.jugador1.nombre}:</span> `;
+                dadosJ1Container.appendChild(jugador1Label);
+                dadosJ1Container.appendChild(window.crearDado(valorDado1J1));
+                dadosJ1Container.appendChild(window.crearDado(valorDado2J1));
+                const sumaDadosJ1 = document.createElement('span');
+                sumaDadosJ1.textContent = ` = ${sumaJ1}`;
+                if (sumaJ1 === 7) {
+                    sumaDadosJ1.innerHTML += ` <span style="color: green; font-weight: bold;">(+1 punto)</span>`;
+                }
+                dadosJ1Container.appendChild(sumaDadosJ1);
+                jugadaDiv.appendChild(dadosJ1Container);
+                // Mostrar dados del Jugador 2
+                const dadosJ2Container = document.createElement('div');
+                dadosJ2Container.className = 'dados-container';
+                const jugador2Label = document.createElement('div');
+                jugador2Label.innerHTML = `<span class="jugador-nombre">${this.jugador2.nombre}:</span> `;
+                dadosJ2Container.appendChild(jugador2Label);
+                dadosJ2Container.appendChild(window.crearDado(valorDado1J2));
+                dadosJ2Container.appendChild(window.crearDado(valorDado2J2));
+                const sumaDadosJ2 = document.createElement('span');
+                sumaDadosJ2.textContent = ` = ${sumaJ2}`;
+                if (sumaJ2 === 7) {
+                    sumaDadosJ2.innerHTML += ` <span style="color: green; font-weight: bold;">(+1 punto)</span>`;
+                }
+                dadosJ2Container.appendChild(sumaDadosJ2);
+                jugadaDiv.appendChild(dadosJ2Container);
                 // Puntaje actualizado
                 const puntaje = document.createElement('div');
                 puntaje.className = 'puntaje';
